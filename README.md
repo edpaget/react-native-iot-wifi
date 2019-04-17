@@ -32,7 +32,7 @@ iOS:
 ```javascript
 import Wifi from "react-native-iot-wifi";
 
-Wifi.isAvaliable((avaliable) => {
+Wifi.isAvailable((avaliable) => {
   console.log(avaliable ? 'avaliable' : 'failed');
 });
 

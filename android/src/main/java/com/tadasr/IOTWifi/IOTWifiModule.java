@@ -35,7 +35,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isAvaliable(Callback callback) {
+    public void isAvailable(final Callback callback) {
         callback.invoke(true);
     }
 
@@ -105,9 +105,6 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
     }
 
     private void bindToNetwork(final String ssid) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return;
-        }
         NetworkRequest.Builder builder = new NetworkRequest.Builder();
         builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
         connectivityManager
