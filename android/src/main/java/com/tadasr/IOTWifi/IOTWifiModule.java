@@ -36,7 +36,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isAvailable(final Callback callback) {
+    public void isApiAvailable(final Callback callback) {
         callback.invoke(true);
     }
 
