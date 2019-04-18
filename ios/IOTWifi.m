@@ -14,7 +14,7 @@
     }
     
     RCT_EXPORT_METHOD(connect:(NSString*)ssid
-                      bindNetwork:(BOOL)bindNetwork
+                      bindNetwork:(BOOL)bindNetwork //Ignored
                       callback:(RCTResponseSenderBlock)callback) {
         if (@available(iOS 11.0, *)) {
             NEHotspotConfiguration* configuration = [[NEHotspotConfiguration alloc] initWithSSID:ssid];
@@ -32,14 +32,11 @@
             callback(@[@"Not supported in iOS<11.0"]);
         }
     }
-    
-    RCT_EXPORT_METHOD(forceWifiUsage:(BOOL)force) {
-    }
-    
+        
     RCT_EXPORT_METHOD(connectSecure:(NSString*)ssid
                       withPassphrase:(NSString*)passphrase
                       isWEP:(BOOL)isWEP
-                      bindNetwork:(BOOL)bindNetwork
+                      bindNetwork:(BOOL)bindNetwork //Ignored
                       callback:(RCTResponseSenderBlock)callback) {
         
         if (@available(iOS 11.0, *)) {
@@ -60,7 +57,7 @@
     }
     
     RCT_EXPORT_METHOD(removeSSID:(NSString*)ssid
-                      unbindNetwork:(BOOL)unbindNetwork
+                      unbindNetwork:(BOOL)unbindNetwork //Ignored
                       callback:(RCTResponseSenderBlock)callback) {
         
         if (@available(iOS 11.0, *)) {

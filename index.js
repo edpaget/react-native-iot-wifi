@@ -55,5 +55,4 @@ module.exports = {
  * todo: connectSecure(String ssid, String passphrase, Boolean isWEP, Boolean bindNetwork = false, Callback callback)
  * removeSSID(String ssid, Boolean unbindNetwork = false, Callback callback)
  * getSSID(Callback callback)
- * Android only: forceWifiUsage()
  */
