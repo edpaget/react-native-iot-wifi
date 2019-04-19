@@ -88,7 +88,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
                     bindToNetwork(ssid, callback);
                 } catch (Exception e) {
                     callback.invoke();
-                    Log.d("Failed to bind to Wifi: ", ssid);
+                    Log.d("IoTWifi", "Failed to bind to Wifi: " + ssid);
                 }
             } else {
                 callback.invoke();
@@ -227,7 +227,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
         if (configList != null) {
             for (WifiConfiguration wifiConfig : configList) {
                 if (wifiConfig.SSID.equals(comparableSSID)) {
-                    Log.d("Found Matching Wifi: ", wifiConfig.toString());
+                    Log.d("IoTWifi", "Found Matching Wifi: "+ wifiConfig.toString());
                     existingNetworkId = wifiConfig.networkId;
                     break;
 

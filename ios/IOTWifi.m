@@ -18,7 +18,7 @@
                       callback:(RCTResponseSenderBlock)callback) {
         if (@available(iOS 11.0, *)) {
             NEHotspotConfiguration* configuration = [[NEHotspotConfiguration alloc] initWithSSID:ssid];
-            configuration.joinOnce = true;
+            configuration.joinOnce = !bindNetwork;
             
             [[NEHotspotConfigurationManager sharedManager] applyConfiguration:configuration completionHandler:^(NSError * _Nullable error) {
                 if (error != nil) {
@@ -36,12 +36,12 @@
     RCT_EXPORT_METHOD(connectSecure:(NSString*)ssid
                       withPassphrase:(NSString*)passphrase
                       isWEP:(BOOL)isWEP
-                      bindNetwork:(BOOL)bindNetwork //Ignored
+                      bindNetwork:(BOOL)bindNetwork
                       callback:(RCTResponseSenderBlock)callback) {
         
         if (@available(iOS 11.0, *)) {
             NEHotspotConfiguration* configuration = [[NEHotspotConfiguration alloc] initWithSSID:ssid passphrase:passphrase isWEP:isWEP];
-            configuration.joinOnce = true;
+            configuration.joinOnce = !bindNetwork;
             
             [[NEHotspotConfigurationManager sharedManager] applyConfiguration:configuration completionHandler:^(NSError * _Nullable error) {
                 if (error != nil) {
