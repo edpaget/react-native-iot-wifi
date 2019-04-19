@@ -89,17 +89,5 @@
 
         callback(@[@"Cannot detect SSID"]);
     }
-    
-    RCT_EXPORT_METHOD(useWifiRequests:(BOOL)useRequests
-                      resolver:(RCTPromiseResolveBlock)resolve
-                      rejecter:(RCTPromiseRejectBlock)reject) {
-        resolve([NSNumber numberWithBool:false]);
-    }
-    
-    RCT_EXPORT_METHOD(request:(NSString*)urlString
-                      resolver:(RCTPromiseResolveBlock)resolve
-                      rejecter:(RCTPromiseRejectBlock)reject) {
-        reject(@"no_implementation", @"There are no implementation on iOS", [NSError errorWithDomain:@"com.iotwifi" code:-1 userInfo:nil]);
-    }
 @end
 
