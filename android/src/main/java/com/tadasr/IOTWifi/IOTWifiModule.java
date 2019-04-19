@@ -57,7 +57,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
 
     private void connectToWifi(String ssid, String passphrase, Boolean isWEP, Boolean bindNetwork, Callback callback) {
         if (Build.VERSION.SDK_INT > 28) {
-            callback.invoke("Fail");
+            callback.invoke("Not supported on Android Q");
             return;
         }
         removeSSID(ssid);
@@ -70,7 +70,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
             wifiManager.disconnect();
             boolean success =  wifiManager.enableNetwork(networkId, true);
             if (!success) {
-                callback.invoke("Failed to add network configuration");
+                callback.invoke("Failed to enable added network");
                 return;
             }
             success = wifiManager.reconnect();
@@ -87,8 +87,8 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
                 try {
                     bindToNetwork(ssid, callback);
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
                     callback.invoke();
+                    Log.d("Failed to bind to Wifi: ", ssid);
                 }
             } else {
                 callback.invoke();
@@ -227,7 +227,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
         if (configList != null) {
             for (WifiConfiguration wifiConfig : configList) {
                 if (wifiConfig.SSID.equals(comparableSSID)) {
-                    Log.d("wifi", wifiConfig.toString());
+                    Log.d("Found Matching Wifi: ", wifiConfig.toString());
                     existingNetworkId = wifiConfig.networkId;
                     break;
 
