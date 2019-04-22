@@ -16,6 +16,14 @@ import android.util.Log;
 
 import java.util.List;
 
+
+class FailureCodes {
+    static int SYSTEM_ADDED_CONFIG_EXISTS = 1;
+    static int FAILED_TO_CONNECT = 2;
+    static int FAILED_TO_ADD_CONFIG = 3;
+    static int FAILED_TO_BIND_CONFIG = 4;
+}
+
 public class IOTWifiModule extends ReactContextBaseJavaModule {
     private WifiManager wifiManager;
     private ConnectivityManager connectivityManager;
@@ -28,6 +36,10 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
         connectivityManager = (ConnectivityManager) getReactApplicationContext().getApplicationContext()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         context = getReactApplicationContext();
+    }
+
+    private String errorFromCode(int errorCode) {
+        return "Error: " + errorCode;
     }
 
     @Override
@@ -60,9 +72,12 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
             callback.invoke("Not supported on Android Q");
             return;
         }
-        removeSSID(ssid);
+        if (!removeSSID(ssid)) {
+            callback.invoke(errorFromCode(FailureCodes.SYSTEM_ADDED_CONFIG_EXISTS));
+            return;
+        }
 
-        WifiConfiguration configuration = getWifiConfiguration(ssid, passphrase, isWEP);
+        WifiConfiguration configuration = createWifiConfiguration(ssid, passphrase, isWEP);
         int networkId = wifiManager.addNetwork(configuration);
 
         if (networkId != -1) {
@@ -70,35 +85,35 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
             wifiManager.disconnect();
             boolean success =  wifiManager.enableNetwork(networkId, true);
             if (!success) {
-                callback.invoke("Failed to enable added network");
+                callback.invoke(errorFromCode(FailureCodes.FAILED_TO_ADD_CONFIG));
                 return;
             }
             success = wifiManager.reconnect();
             if (!success) {
-                callback.invoke("Fail");
+                callback.invoke(errorFromCode(FailureCodes.FAILED_TO_CONNECT));
                 return;
             }
             boolean connected = pollForValidSSSID(10, ssid);
             if (!connected) {
-                callback.invoke("Failed to connect");
+                callback.invoke(errorFromCode(FailureCodes.FAILED_TO_CONNECT));
                 return;
             }
-            if (bindNetwork) {
-                try {
-                    bindToNetwork(ssid, callback);
-                } catch (Exception e) {
-                    callback.invoke();
-                    Log.d("IoTWifi", "Failed to bind to Wifi: " + ssid);
-                }
-            } else {
+            if (!bindNetwork) {
+                callback.invoke();
+                return;
+            }
+            try {
+                bindToNetwork(ssid, callback);
+            } catch (Exception e) {
+                Log.d("IoTWifi", "Failed to bind to Wifi: " + ssid);
                 callback.invoke();
             }
         } else {
-            callback.invoke("Failed to add network configuration");
+            callback.invoke(errorFromCode(FailureCodes.FAILED_TO_ADD_CONFIG));
         }
     }
 
-    private WifiConfiguration getWifiConfiguration(String ssid, String passphrase, Boolean isWEP) {
+    private WifiConfiguration createWifiConfiguration(String ssid, String passphrase, Boolean isWEP) {
         WifiConfiguration configuration = new WifiConfiguration();
         configuration.SSID = String.format("\"%s\"", ssid);
 
@@ -155,7 +170,7 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
                         e.printStackTrace();
                     }
                 }
-                callback.invoke("Failed to bind");
+                callback.invoke(errorFromCode(FailureCodes.FAILED_TO_BIND_CONFIG));
             }
 
             @Override
@@ -178,7 +193,10 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void removeSSID(String ssid, Boolean unbind, Callback callback) {
-        removeSSID(ssid);
+        if (!removeSSID(ssid)) {
+            callback.invoke(errorFromCode(FailureCodes.SYSTEM_ADDED_CONFIG_EXISTS));
+            return;
+        }
         if (unbind) {
             bindProcessToNetwork(null);
         }
@@ -186,14 +204,23 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
         callback.invoke();
     }
 
-    public void removeSSID(String ssid) {
+
+    private boolean removeSSID(String ssid) {
+        boolean success = true;
         // Remove the existing configuration for this network
-        int existingNetworkId = getExistingNetworkId(ssid);
-        if (existingNetworkId == -1) {
-            return;
+        WifiConfiguration existingNetworkConfigForSSID = getExistingNetworkConfig(ssid);
+
+        //No Config found
+        if (existingNetworkConfigForSSID == null) {
+            return success;
         }
-        wifiManager.removeNetwork(existingNetworkId);
-        wifiManager.saveConfiguration();
+        int existingNetworkId = existingNetworkConfigForSSID.networkId;
+        if (existingNetworkId == -1) {
+            return success;
+        }
+        success = wifiManager.removeNetwork(existingNetworkId) && wifiManager.saveConfiguration();
+        //If not our config then success would be false
+        return success;
     }
 
     @ReactMethod
@@ -220,20 +247,20 @@ public class IOTWifiModule extends ReactContextBaseJavaModule {
         return ssid;
     }
 
-    private int getExistingNetworkId(String ssid) {
-        int existingNetworkId = -1;
+    private WifiConfiguration getExistingNetworkConfig(String ssid) {
+        WifiConfiguration existingNetworkConfigForSSID = null;
         List<WifiConfiguration> configList = wifiManager.getConfiguredNetworks();
         String comparableSSID = ('"' + ssid + '"'); // Add quotes because wifiConfig.SSID has them
         if (configList != null) {
             for (WifiConfiguration wifiConfig : configList) {
                 if (wifiConfig.SSID.equals(comparableSSID)) {
                     Log.d("IoTWifi", "Found Matching Wifi: "+ wifiConfig.toString());
-                    existingNetworkId = wifiConfig.networkId;
+                    existingNetworkConfigForSSID = wifiConfig;
                     break;
 
                 }
             }
         }
-        return existingNetworkId;
+        return existingNetworkConfigForSSID;
     }
 }
