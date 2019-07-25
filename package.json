@@ -5,6 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
+    "react-native-iot-wifi.podspec",
     "index.d.ts",
     "index.js",
     "android",
